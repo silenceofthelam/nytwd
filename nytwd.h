@@ -78,5 +78,5 @@ char *construct_response(int code);
 
 
 // Define function to send HTTP response
-void send_response(int newsockfd);
+void send_response(int newsockfd, char *response);
 #endif

@@ -53,6 +53,9 @@ char *read_request(int newsockfd)
 	{
 
 		rec = recv(newsockfd, &(buffer[position]), (2047 - position), 0);
+
+		debug("buffer so far:\n%s", buffer);
+		debug("Bytes received: %d", rec);
 		
 		if(rec == 0)
 		{
@@ -63,19 +66,18 @@ char *read_request(int newsockfd)
 
 		position += rec;
 		
-		if(rec == 2)
-		{
-			debug("rec equals 2");
-		
-			debug("char1: %d", buffer[position - 1]);
-			debug("char2: %d", buffer[position - 1]);
+				
+		debug("char1: %d", buffer[position - 4]);
+		debug("char2: %d", buffer[position - 3]);
+		debug("char1: %d", buffer[position - 2]);
+		debug("char2: %d", buffer[position - 1]);
 
-			if((buffer[position - 2] == '\r') && (buffer[position - 1] == '\n'))
-			{
-				debug("End of request");
-				EOR = 1;
-			}
+		if((buffer[position - 4] == '\r') && (buffer[position - 3] == '\n') && (buffer[position - 2] == '\r') && (buffer[position - 1] == '\n'))
+		{
+			debug("End of request");
+			EOR = 1;
 		}
+
 	}
 
 	debug("Received %d bytes from client", (int)strlen(buffer));
@@ -88,20 +90,42 @@ error:
 	return NULL;
 }
 
-
-void send_response(int newsockfd)
+char *construct_response(int code)
 {
-	char *response = malloc(102400);
+	
+	FILE *web_page = fopen("index.html", "r");
+	fseek(web_page, 0, SEEK_END);
+	long fsize = ftell(web_page);
+	fseek(web_page, 0, SEEK_SET);
+
+	char temp[] = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
+
+
+	char *response = malloc(fsize + (strlen(temp)));
 	check_mem(response);
 
-	char temp[] = "Connection closing...\n";
+	strncpy(response, temp, strlen(temp));
+	fread(&(response[strlen(temp)]), fsize, 1, web_page);
+	fclose(web_page);
 
-	response = strncpy(response, temp, strlen(temp));
+	return response;
+
+error:
+	if(response) free(response);
+	return NULL;
+
+}
+
+
+void send_response(int newsockfd, char *response)
+{
+	
 	int len = strlen(response);
 
 	int bytes_sent = send(newsockfd, response, len, 0);
 
 	debug("Sent %d bytes to client", bytes_sent);
+
 
 error:
 	if(response) free(response);

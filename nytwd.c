@@ -113,7 +113,7 @@ void *get_in_addr(struct sockaddr *sa)
 void child_process(int newsockfd)
 {
 	read_request(newsockfd);
-	send_response(newsockfd);
+	send_response(newsockfd, construct_response(200));
 	close(newsockfd);
 	exit(0);
 }
