@@ -21,6 +21,7 @@
 
 extern char *PORTNUM;
 extern int CONNECTIONS;
+extern int CUR_CONNECTIONS;
 
 
 /* End of global variable definitions */
@@ -76,7 +77,7 @@ int parse_request(char *request);
 
 char *construct_response(int code);
 
-char *read_file(FILE *file, long int fsize);
+int change_vars(char *buffer, long int buffer_size, long int position);
 
 
 // Define function to send HTTP response

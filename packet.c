@@ -11,28 +11,22 @@ char *construct_response(int code)
 
 	char head[] = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
 
-	int buffer_size = fsize + strlen(head) + 256;
+	long int buffer_size = fsize + strlen(head) + 256;
 
 
 	char *response = malloc(buffer_size);
 	check_mem(response);
 
-	int position = 0;
+	long int position = 0;
 
 	strncpy(&(response[position]), head, strlen(head));
 	position += strlen(head);
 
-	char *rtn = read_file(web_page, fsize);
-
-	while(rtn != NULL)
-	  {
-	    strncpy(&(response[position]), (char *)rtn, strlen((char *)rtn));
-	    position += strlen(rtn);
-
-	    rtn = read_file(web_page, fsize);
-	  }
+	fread(&(response[position]), 1, fsize, web_page);
 	
 	fclose(web_page);
+
+	change_vars(response, buffer_size, position);
 
 	return response;
 
@@ -43,26 +37,13 @@ error:
 }
 
 
-char *read_file(FILE *file, long int fsize)
+int change_vars(char *buffer, long int buffer_size, long int position)
 {
 
-  long int fpos = ftell(file);
-  int position = 0;
-  char *mod_file;
-  char *temp;
-
-  mod_file = malloc(fsize - fpos);
-  memset(mod_file, '\0', (fsize - fpos));
-
-  temp = malloc(fsize - fpos);
-  memset(temp, '\0', (fsize - fpos));
-
-  while((temp = fgets(temp, (fsize - fpos), file)) != NULL)
-    {
       int i;
-      for(i = 0; i < strlen(temp); i++)
+      for(i = 0; i < strlen(buffer); i++)
 	{
-	  if((temp[i] = '#') && (temp[i+1] = '#'))
+	  if((buffer[i] == '#') && (buffer[i+1] == '#'))
 	    {
 
 	      int replace = i;
@@ -71,29 +52,34 @@ char *read_file(FILE *file, long int fsize)
 	      i++;
 
 	      char var[20];
+	      memset(var, '\0', 20);
 	      
 	      int j;
 
 	      for(j = 0; j < 20; j++, i++)
 		{
-		  if((temp[i] = '#'))
+		  if((buffer[i] == '#'))
 		    {
 		      var[j] = '\0';
+		      i++;
 		      break;
 		    }
 
-		  strncpy(&(var[j]), &(temp[i]), 1);
-		    
+		   strncpy(&(var[j]), &(buffer[i]), 1);
 		}
 	      
-	      debug("Found variable in index.html: %s", var);
+	      debug("Found variable in index.html at position %d: %s", replace, var);
 
 	      switch(strlen(var))
 		{
 		case 11:
 		  if((strcmp(var, "CONNECTIONS"))== 0)
 		    {
-		      memmove(&(temp[replace]), &(temp[replace + 12]), strlen(temp) - (position + 12));
+		      char connections[12];
+		      snprintf(connections, 12, "%d", CUR_CONNECTIONS);
+		      strncpy(&(buffer[replace]), connections, strlen(connections));
+		      memmove(&(buffer[replace + strlen(connections)]), &(buffer[replace + 14]), strlen(buffer) - i);
+		      buffer[strlen(buffer) - 14] = '\0';
 		      break;
 		    }
 		  
@@ -103,14 +89,10 @@ char *read_file(FILE *file, long int fsize)
 		default:
 		  debug("Variable %s not recognized", var);
 		}
-	      
 	    }
+
 	}
 
-      strncpy(&(mod_file[position]), temp, strlen(temp));
 
-      position += strlen(temp);
-    }
-
-  return mod_file;
+  return strlen(buffer);
 }

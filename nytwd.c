@@ -36,19 +36,22 @@ int main(int argc, char *argv[])
 		{
 			log_err("Could not accept new connection");
 		}
-
-		inet_ntop(their_addr.ss_family, get_in_addr((struct sockaddr *)&their_addr), ipaddr, sizeof ipaddr);
-
-		log_info("Accepted connection from %s", ipaddr);
-
-		if (!fork())
+		else
 		{
-			debug("Forked into child process");
-			close(sockfd);
-			child_process(newsockfd);
-		}
+			CUR_CONNECTIONS++;
+			inet_ntop(their_addr.ss_family, get_in_addr((struct sockaddr *)&their_addr), ipaddr, sizeof ipaddr);
 
-		close(newsockfd);
+			log_info("Accepted connection from %s", ipaddr);
+
+			if (!fork())
+			{
+				debug("Forked into child process");
+				close(sockfd);
+				child_process(newsockfd);
+			}
+
+			close(newsockfd);
+		}
 			
 
 	}
@@ -68,6 +71,7 @@ int parse_config()
 
 	PORTNUM = "80";
 	CONNECTIONS = 10;
+	CUR_CONNECTIONS = 0;
 
 	return 0;
 }
@@ -96,6 +100,8 @@ void sigchild_handler(int s)
 	int saved_errno = errno;
 
 	while(waitpid(-1, NULL, WNOHANG) > 0);
+	
+	CUR_CONNECTIONS--;
 	
 	debug("Child process ended");
 
