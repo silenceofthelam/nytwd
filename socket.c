@@ -1,4 +1,5 @@
 #include "nytwd.h"
+#include "packet.c"
 
 int open_socket()
 {
@@ -90,31 +91,6 @@ error:
 	return NULL;
 }
 
-char *construct_response(int code)
-{
-	
-	FILE *web_page = fopen("index.html", "r");
-	fseek(web_page, 0, SEEK_END);
-	long fsize = ftell(web_page);
-	fseek(web_page, 0, SEEK_SET);
-
-	char temp[] = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
-
-
-	char *response = malloc(fsize + (strlen(temp)));
-	check_mem(response);
-
-	strncpy(response, temp, strlen(temp));
-	fread(&(response[strlen(temp)]), fsize, 1, web_page);
-	fclose(web_page);
-
-	return response;
-
-error:
-	if(response) free(response);
-	return NULL;
-
-}
 
 
 void send_response(int newsockfd, char *response)
@@ -125,10 +101,6 @@ void send_response(int newsockfd, char *response)
 	int bytes_sent = send(newsockfd, response, len, 0);
 
 	debug("Sent %d bytes to client", bytes_sent);
-
-
-error:
-	if(response) free(response);
 
 }
 	

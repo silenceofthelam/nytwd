@@ -76,6 +76,8 @@ int parse_request(char *request);
 
 char *construct_response(int code);
 
+char *read_file(FILE *file, long int fsize);
+
 
 // Define function to send HTTP response
 void send_response(int newsockfd, char *response);

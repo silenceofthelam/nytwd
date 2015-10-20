@@ -3,6 +3,8 @@
 
 char *PORTNUM;
 int CONNECTIONS;
+int CUR_CONNECTIONS;
+
 
 int main(int argc, char *argv[])
 {
