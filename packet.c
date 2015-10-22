@@ -3,19 +3,8 @@
 
 char *construct_response(int code)
 {
-	
-	FILE *web_page = fopen("index.html", "r");
-	fseek(web_page, 0, SEEK_END);
-	long fsize = ftell(web_page);
-	fseek(web_page, 0, SEEK_SET);
 
 	char head[] = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
-
-	long int buffer_size = fsize + strlen(head) + 256;
-
-
-	char *response = malloc(buffer_size);
-	check_mem(response);
 
 	long int position = 0;
 
@@ -37,19 +26,51 @@ error:
 }
 
 
-int change_vars(char *buffer, long int buffer_size, long int position)
+char *read_file(char *filename)
+{
+
+        FILE *web_page = fopen(filename, "r");
+	check(web_page, "Could not open file");
+	long FILE_SIZE = 2048;
+	int LINE_SIZE = 128;
+
+	long fsize = 0;
+
+	char *response = malloc(FILE_SIZE);
+	check_mem(response);
+
+	char *line = malloc(LINE_SIZE);
+	check_mem(line);
+
+	while (fgets(line, sizeof line, web_page) != NULL)
+	{
+		fsize += change_vars(line, response, fsize);
+
+		if(fsize > (FILE_SIZE - LINE_SIZE))
+		{
+			FILE_SIZE += 2048;
+			response = realloc(response, FILE_SIZE);
+			check_mem(response);
+		}
+	}
+
+	return response;
+}
+		
+
+
+long change_vars(char *line, char *buffer, long int buffer_size)
 {
 
       int i;
-      for(i = 0; i < strlen(buffer); i++)
+      for(i = 0; i < strlen(line); i++, buffer_size++)
 	{
-	  if((buffer[i] == '#') && (buffer[i+1] == '#'))
+	  if((line[i] == '#') && (line[i+1] == '#'))
 	    {
 
 	      int replace = i;
 
-	      i++;
-	      i++;
+	      i += 2;
 
 	      char var[20];
 	      memset(var, '\0', 20);
@@ -65,10 +86,10 @@ int change_vars(char *buffer, long int buffer_size, long int position)
 		      break;
 		    }
 
-		   strncpy(&(var[j]), &(buffer[i]), 1);
+		   strncpy(&(var[j]), &(line[i]), 1);
 		}
 	      
-	      debug("Found variable in index.html at position %d: %s", replace, var);
+	      debug("Found variable in index.html at position %d: %s", (buffer_size + replace), var);
 
 	      switch(strlen(var))
 		{
@@ -77,8 +98,6 @@ int change_vars(char *buffer, long int buffer_size, long int position)
 		    {
 		      char connections[12];
 		      snprintf(connections, 12, "%d", CUR_CONNECTIONS);
-		      long cur_buffer_len = strlen(buffer);
-		      memmove(&(buffer[replace + strlen(connections)]), &(buffer[replace + 14]), strlen(buffer) - i);
 		      strncpy(&(buffer[replace]), connections, strlen(connections));
 		      cur_buffer_len += strlen(connections) - 14;
 		      buffer[cur_buffer_len] = '\0';
