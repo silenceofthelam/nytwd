@@ -14,6 +14,7 @@
 #include <arpa/inet.h>
 #include <sys/wait.h>
 #include <signal.h>
+#include <time.h>
 
 #include "dbg.h"
 
@@ -22,6 +23,7 @@
 extern char *PORTNUM;
 extern int CONNECTIONS;
 extern int CUR_CONNECTIONS;
+extern struct timespec START;
 
 
 /* End of global variable definitions */
@@ -82,4 +84,6 @@ int change_vars(char *buffer, long int buffer_size, long int position);
 
 // Define function to send HTTP response
 void send_response(int newsockfd, char *response);
+
+char *get_uptime();
 #endif

@@ -4,10 +4,13 @@
 char *PORTNUM;
 int CONNECTIONS;
 int CUR_CONNECTIONS;
+struct timespec START;
 
 
 int main(int argc, char *argv[])
 {
+        clock_gettime(CLOCK_MONOTONIC, &START);
+
 	debug("Start of main\n");
 	
 	// Initialize variables
@@ -121,8 +124,29 @@ void *get_in_addr(struct sockaddr *sa)
 void child_process(int newsockfd)
 {
 	read_request(newsockfd);
+	debug("Uptime: %ssec", get_uptime());
 	send_response(newsockfd, construct_response(200));
 	close(newsockfd);
 	exit(0);
 }
 
+char *get_uptime()
+{
+  struct timespec NOW;
+  char *uptime;
+
+  uptime = malloc(48);
+
+  clock_gettime(CLOCK_MONOTONIC, &NOW);
+
+  uint64_t nanoseconds = 1000000000 * (NOW.tv_sec - START.tv_sec) + NOW.tv_nsec - START.tv_nsec;
+  int hours = (int)(nanoseconds / 3600000000000);
+  int minutes = (int)(nanoseconds / 60000000000);
+  double seconds = (double)nanoseconds / 1000000000;
+
+  snprintf(uptime, 48, "%dhrs %dmin %.3fsec", hours, minutes, seconds);
+
+  return uptime;
+}
+
+  

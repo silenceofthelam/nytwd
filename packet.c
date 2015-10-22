@@ -77,14 +77,30 @@ int change_vars(char *buffer, long int buffer_size, long int position)
 		    {
 		      char connections[12];
 		      snprintf(connections, 12, "%d", CUR_CONNECTIONS);
-		      strncpy(&(buffer[replace]), connections, strlen(connections));
+		      long cur_buffer_len = strlen(buffer);
 		      memmove(&(buffer[replace + strlen(connections)]), &(buffer[replace + 14]), strlen(buffer) - i);
-		      buffer[strlen(buffer) - 14] = '\0';
+		      strncpy(&(buffer[replace]), connections, strlen(connections));
+		      cur_buffer_len += strlen(connections) - 14;
+		      buffer[cur_buffer_len] = '\0';
 		      break;
 		    }
 		  
 		  goto NOVAR;
-    
+
+		case 6:
+		  if((strcmp(var, "UPTIME")) == 0)
+		    {
+		      char *uptime = get_uptime();
+		      long cur_buffer_len = strlen(buffer);
+		      memmove(&(buffer[replace + strlen(uptime)]), &(buffer[replace + 9]), strlen(buffer) - i);
+		      strncpy(&(buffer[replace]), uptime, strlen(uptime));
+		      cur_buffer_len += strlen(uptime) - 9;
+		      buffer[cur_buffer_len] = '\0';
+		      break;
+		     }
+
+		  goto NOVAR;
+
 		NOVAR:
 		default:
 		  debug("Variable %s not recognized", var);
