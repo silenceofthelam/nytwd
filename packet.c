@@ -1,21 +1,26 @@
 #include "nytwd.h"
 #include "dbg.h"
 
+char *read_file(char* filename);
+long change_vars(char *line, char *buffer, long int buffer_size);
+
+
 char *construct_response(int code)
 {
 
+  char* response;
+  char* file_buffer;
+
+  response = malloc(4096);
+  check_mem(response);
+
 	char head[] = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
 
-	long int position = 0;
 
-	strncpy(&(response[position]), head, strlen(head));
-	position += strlen(head);
+  file_buffer = read_file("index.html");
 
-	fread(&(response[position]), 1, fsize, web_page);
-	
-	fclose(web_page);
-
-	change_vars(response, buffer_size, position);
+	strncpy(response, head, strlen(head));
+  strncat(response, file_buffer, strlen(file_buffer));
 
 	return response;
 
@@ -29,7 +34,7 @@ error:
 char *read_file(char *filename)
 {
 
-        FILE *web_page = fopen(filename, "r");
+  FILE *web_page = fopen(filename, "r");
 	check(web_page, "Could not open file");
 	long FILE_SIZE = 2048;
 	int LINE_SIZE = 128;
@@ -54,13 +59,29 @@ char *read_file(char *filename)
 		}
 	}
 
+  fclose(web_page);
+
 	return response;
+
+error:
+  if(web_page)
+    fclose(web_page);
+
+  if(response)
+    free(response);
+
+  if(line)
+    free(line);
+
+  return NULL;
+
 }
 		
 
 
 long change_vars(char *line, char *buffer, long int buffer_size)
 {
+  long int cur_buffer_len = buffer_size;
 
       int i;
       for(i = 0; i < strlen(line); i++, buffer_size++)
@@ -89,7 +110,7 @@ long change_vars(char *line, char *buffer, long int buffer_size)
 		   strncpy(&(var[j]), &(line[i]), 1);
 		}
 	      
-	      debug("Found variable in index.html at position %d: %s", (buffer_size + replace), var);
+	      debug("Found variable in index.html at position %ld: %s", (buffer_size + replace), var);
 
 	      switch(strlen(var))
 		{

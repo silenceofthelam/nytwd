@@ -79,8 +79,6 @@ int parse_request(char *request);
 
 char *construct_response(int code);
 
-int change_vars(char *buffer, long int buffer_size, long int position);
-
 
 // Define function to send HTTP response
 void send_response(int newsockfd, char *response);

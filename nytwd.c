@@ -9,13 +9,13 @@ struct timespec START;
 
 int main(int argc, char *argv[])
 {
-        clock_gettime(CLOCK_MONOTONIC, &START);
+ clock_gettime(CLOCK_MONOTONIC, &START);
 
 	debug("Start of main\n");
 	
 	// Initialize variables
-	
-	int sockfd, newsockfd;  // listen on sockfd, accept connections to newfd
+	// listen on sockfd, accept connections to newsockfd 
+	int sockfd, newsockfd;
 	struct sigaction sa;
 
 	check(!parse_config(), "Server could not start, error in config file");
@@ -24,7 +24,6 @@ int main(int argc, char *argv[])
 
 	set_sigaction(&sa);
 
-	
 	log_info("server: waiting for connections...\n");
 
 	while(1)
@@ -148,5 +147,3 @@ char *get_uptime()
 
   return uptime;
 }
-
-  
