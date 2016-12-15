@@ -1,5 +1,4 @@
-#include "nytwd.h"
-#include "packet.c"
+#include "socket.h"
 
 int open_socket()
 {

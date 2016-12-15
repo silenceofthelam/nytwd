@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 #include <errno.h>
-#include <string.h>
 
 #ifdef NDEBUG
 #define debug(M, ...)

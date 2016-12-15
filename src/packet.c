@@ -1,9 +1,4 @@
-#include "nytwd.h"
-#include "dbg.h"
-
-char *read_file(char* filename);
-long change_vars(char *line, char *buffer, long int buffer_size);
-
+#include "packet.h"
 
 char *construct_response(int code)
 {
@@ -17,7 +12,7 @@ char *construct_response(int code)
 	char head[] = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
 
 
-  file_buffer = read_file("index.html");
+  file_buffer = read_file("test/index.html");
 
 	strncpy(response, head, strlen(head));
   strncat(response, file_buffer, strlen(file_buffer));

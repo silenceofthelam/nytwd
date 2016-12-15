@@ -1,5 +1,4 @@
 #include "nytwd.h"
-#include "socket.c"
 
 char *PORTNUM;
 int CONNECTIONS;
