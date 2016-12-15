@@ -12,7 +12,7 @@ char *construct_response(int code)
 	char head[] = "HTTP/1.1 200 OK\r\nContent-Type: text/html; charset=UTF-8\r\n\r\n";
 
 
-  file_buffer = read_file("test/index.html");
+  file_buffer = read_file("index.html");
 
 	strncpy(response, head, strlen(head));
   strncat(response, file_buffer, strlen(file_buffer));
